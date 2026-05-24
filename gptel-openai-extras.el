@@ -358,15 +358,9 @@ For the meanings of the keyword arguments, see `gptel-make-openai'."
 
 (cl-defmethod gptel--request-data ((_backend gptel-kimi) _prompts)
   "JSON encode PROMPTS for sending to Kimi API."
-  (let ((data (cl-call-next-method))
-        (model-name (gptel--model-name gptel-model)))
-    ;; https://platform.moonshot.ai/docs/guide/kimi-k2-5-quickstart#overview-of-kimi-k25-model
-    ;; For kimi-k2.5 models:
-    ;; 1. Explicitly set thinking parameter based on gptel-include-reasoning
-    ;; 2. Set temperature to fixed values (1.0 for thinking, 0.6 for non-thinking)
-    (when (string-match-p "^kimi-k2\\.5" model-name)
-      (plist-put data :thinking `(:type ,(if gptel-include-reasoning "enabled" "disabled")))
-      (plist-put data :temperature (if gptel-include-reasoning 1.0 0.6)))
+  (let ((data (cl-call-next-method)))
+    ;; https://platform.kimi.com/docs/api/models-overview
+    (plist-put data :thinking `(:type ,(if gptel-include-reasoning "enabled" "disabled")))
     data))
 
 ;;;###autoload
@@ -378,37 +372,13 @@ For the meanings of the keyword arguments, see `gptel-make-openai'."
           (host "api.moonshot.ai")
           (protocol "https")
           (endpoint "/v1/chat/completions")
-          (models '((kimi-k2.5
+          (models '((kimi-k2.6
                      :description "Kimi's most intelligent model, supporting vision and thinking"
                      :capabilities (tool reasoning media)
                      :mime-types ("image/jpeg" "image/png" "image/webp" "image/gif")
                      :context-window 256
-                     :input-cost 0.6
-                     :output-cost 3.0)
-                    (kimi-k2-0905-preview
-                     :description "Kimi K2 preview model with 256K context"
-                     :capabilities (tool)
-                     :context-window 256
-                     :input-cost 0.6
-                     :output-cost 2.5)
-                    (kimi-k2-turbo-preview
-                     :description "Kimi K2 turbo preview model"
-                     :capabilities (tool)
-                     :context-window 256
-                     :input-cost 1.15
-                     :output-cost 8.0)
-                    (kimi-k2-thinking
-                     :description "Kimi K2 thinking model, reasoning only mode"
-                     :capabilities (tool reasoning)
-                     :context-window 256
-                     :input-cost 0.6
-                     :output-cost 2.5)
-                    (kimi-k2-thinking-turbo
-                     :description "Kimi K2 thinking turbo model"
-                     :capabilities (tool reasoning)
-                     :context-window 256
-                     :input-cost 1.15
-                     :output-cost 8.0))))
+                     :input-cost 0.92
+                     :output-cost 3.85))))
   "Register a Kimi (Moonshot AI) backend for gptel with NAME.
 
 For the meanings of the keyword arguments, see `gptel-make-openai'."
