@@ -366,8 +366,9 @@ For the meanings of the keyword arguments, see `gptel-make-openai'."
 ;;;###autoload
 (cl-defun gptel-make-kimi
     (name &key curl-args stream key request-params
-          (header (lambda () (when-let* ((key (gptel--get-api-key)))
-                          `(("Authorization" . ,(concat "Bearer " key))))))
+          (header (lambda (_info)
+                    (when-let* ((key (gptel--get-api-key)))
+                      `(("Authorization" . ,(concat "Bearer " key))))))
           ;; Host can be "api.moonshot.ai" (global) or "api.moonshot.cn" (China)
           (host "api.moonshot.ai")
           (protocol "https")
